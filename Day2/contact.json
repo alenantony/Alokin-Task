@@ -1,0 +1,51 @@
+[
+    {
+        "fname": "Allen",
+        "lname": "Jose",
+        "phone": [
+            {
+                "type": "work",
+                "value": "12341234"
+            }
+        ],
+        "email": []
+    },
+    {
+        "fname": "qwerty",
+        "lname": "qwerty",
+        "phone": [
+            {
+                "type": "123456789",
+                "value": "123456789"
+            }
+        ],
+        "email": [
+            {
+                "type": "work",
+                "value": "qwerty@qwerty.com"
+            }
+        ]
+    },
+    {
+        "fname": "alen",
+        "lname": "antony",
+        "phone": [],
+        "email": [
+            {
+                "type": "work",
+                "value": "alen@war.com"
+            }
+        ]
+    },
+    {
+        "fname": "Alen",
+        "lname": "Antony",
+        "phone": [
+            {
+                "type": "8256970241",
+                "value": "n"
+            }
+        ],
+        "email": []
+    }
+]
