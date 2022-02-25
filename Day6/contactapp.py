@@ -20,6 +20,8 @@ def list_all_contacts(request):
     """Function list all contacts."""
 
     contact_list = []
+
+    #  Query to select all contacts.
     mycursor.execute("""SELECT JSON_OBJECT(
     "contactId",contact.contactId,"fname",fname,"lname",lname,"phone",(
         SELECT JSON_ARRAYAGG(
@@ -47,30 +49,36 @@ def list_all_contacts(request):
 
 async def create_contact(request):
     """Function to create a new contact."""
+    try:
+        data = await request.json()
+    except json.decoder.JSONDecodeError:
+        return JSONResponse({"status":"JSONDecodeError"}, status_code=400)
 
-    data = await request.json()
+    try:
+        fname = data["fname"]
+        lname = data["lname"]
+        phone = data["phone"]
+        email = data["email"]
+        mycursor.execute(f'INSERT INTO contact(fname, lname) '
+        f'VALUES("{fname}", "{lname}")')
 
-    fname = data["fname"]
-    lname = data["lname"]
-    phone = data["phone"]
-    email = data["email"]
-    mycursor.execute(f'INSERT INTO contact(fname, lname) '
-    f'VALUES("{fname}", "{lname}")')
+        mycursor.execute(f'SELECT max(contactId) from contact')
+        contactId = mycursor.fetchall()[0][0]
+        
+        for number in phone:
+            mycursor.execute(f'INSERT INTO phoneNo(contactId, type, number) '
+            f'VALUES({contactId}, "{number["type"]}", "{number["value"]}")')
+        
+        for address in email:
+            mycursor.execute(f'INSERT INTO email(contactId, type, email) '
+            f'VALUES({contactId}, "{address["type"]}", "{address["value"]}")')
 
-    mycursor.execute(f'SELECT max(contactId) from contact')
-    contactId = mycursor.fetchall()[0][0]
-    
-    for number in phone:
-        mycursor.execute(f'INSERT INTO phoneNo(contactId, type, number) '
-        f'VALUES({contactId}, "{number["type"]}", "{number["value"]}")')
-    
-    for address in email:
-        mycursor.execute(f'INSERT INTO email(contactId, type, email) '
-        f'VALUES({contactId}, "{address["type"]}", "{address["value"]}")')
+        mydb.commit()
+    except:
+        mydb.rollback()
+        return JSONResponse({"status":"Contact create failed"})
 
-    mydb.commit()
-
-    return JSONResponse({"Contact":"Created"})
+    return JSONResponse({"status":"Contact created"})
 
 
 #  CONTACT DETAILS.
@@ -81,6 +89,7 @@ async def contact_details(request):
 
     contactId = request.path_params['contactId']
 
+    #  Query to get all contact information using contactId.
     mycursor.execute(f"""SELECT JSON_OBJECT(
     "contactId",contact.contactId,"fname",fname,"lname",lname,"phone",(
         SELECT JSON_ARRAYAGG(
@@ -103,7 +112,7 @@ async def contact_details(request):
         contact_details = json.loads(result[0][0])
         return JSONResponse(contact_details)
     except IndexError:
-        return JSONResponse(status_code=400)
+        return JSONResponse({"status": "error","message": "Invalid contactId"},status_code=400)
         
     
 #  SEARCH CONTACT.
@@ -114,6 +123,7 @@ def search_contacts(request):
 
     name = request.query_params['name']
 
+    #  Query to get all contacts list using name.
     mycursor.execute(f"""SELECT json_arrayagg(json_object(
     "fname",contact.fName,
     "lname",contact.lName,
@@ -129,8 +139,8 @@ def search_contacts(request):
     or contact.lname = '{name}'""")
 
     try:
-        fname_result = json.loads(mycursor.fetchall()[0][0])
-        result.extend(fname_result)
+        name_result = json.loads(mycursor.fetchall()[0][0])
+        result.extend(name_result)
     except TypeError:
         return JSONResponse([])
         
@@ -141,56 +151,45 @@ def delete_contact(request):
     """Function to delete a contact."""
 
     contactId = request.path_params['contactId']
-    print(contactId)
+
+    mycursor.execute(f"SELECT * FROM contact WHERE contactId = '{contactId}'")
+    result = mycursor.fetchall()
+    if result == []:
+        return JSONResponse({"status": "Invalid contactId"},status_code=400)
 
     mycursor.execute(f"DELETE FROM contact WHERE contactId = '{contactId}'")
     mydb.commit()
-    return JSONResponse({"CONTACT":"DELETED"})
+    return JSONResponse({"status": "Contact Deleted"})
 
 
 async def update_contact(request):
     """Function to update contact details in database. phoneId and emailId 
     are passed in json string inside phone and email to update phone number 
     and emails. phone and email data without ids are inserted to the table 
-    as new number and mail
+    as new number and new email
     """
 
     contactId = int(request.path_params['contactId'])
 
-
-
-
-
     data = await request.json()
     fname = data["fname"]
     lname = data["lname"]
-
-    print(fname)
-    print(lname)
-
-    try:
-        mycursor.execute(f"UPDATE contact SET fname = '{fname}', "
+  
+    mycursor.execute(f"UPDATE contact SET fname = '{fname}', "
                         f"lname = '{lname}' WHERE contactId = '{contactId}'")
-        print("Hello")
-    except:
-        print(f"No contact id {contactId}")
-    
+
     #  To update, delete, and add phone numbers.
     table_phoneid_list = []
     mycursor.execute(f"SELECT phoneId from phoneNo where contactId = "
     f"'{contactId}'")
     result = mycursor.fetchall()
+    if result == []:
+        mydb.rollback()
+        return JSONResponse({"Staus": "Invalid contactId"}, status_code=400)
     
     for i in result:
-        table_phoneid_list.append(i[0])
+        table_phoneid_list.append(i[0])    
 
-    mycursor.execute(f"""SELECT JSON_ARRAYAGG(
-        JSON_OBJECT(
-            "type",type,
-            "value", number
-        )
-    ) FROM phoneNo where contactId = {contactId}""")
-    result = mycursor.fetchall()[0][0]
 
     phone = data["phone"]
 
@@ -228,13 +227,6 @@ async def update_contact(request):
     for i in result:
         table_emailId_list.append(i[0])
     
-    mycursor.execute(f"""SELECT JSON_ARRAYAGG(
-        JSON_OBJECT(
-            "type", type,
-            "email", email
-        )
-    ) FROM email where contactId = {contactId}""")
-    result = mycursor.fetchall()[0][0]
 
     email = data["email"]
 
@@ -256,7 +248,7 @@ async def update_contact(request):
             mycursor.execute(f'INSERT INTO email(contactId, type, email) '
             f'VALUES({contactId}, "{item["type"]}", "{item["value"]}")')
     
-    # To delete email.
+    #  To delete email.
     index = 0
     for item in table_emailId_list:
         if item not in emailId_list:
@@ -265,7 +257,7 @@ async def update_contact(request):
 
     mydb.commit()
 
-    return JSONResponse({"Contact":"Edited"})
+    return JSONResponse({"status": "Contact edited"})
 
 
 routes = [

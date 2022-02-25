@@ -95,28 +95,29 @@ def search_contact():
     try:
         name = input("Enter a name to search")
         mycursor.execute(f'SELECT fname, lname, phone, email from contacts where fname = "{name}"')
-        result = mycursor.fetchall()[0]
+        results = mycursor.fetchall()
+        print(results)
     except:
         print("invalid contact")
         return
-    
-    fname = result[0]
-    first_name = result[0]
-    last_name = result[1]
-    phone = eval(result[2])
-    email = eval(result[3])
-    print(f'----------------------------------')
-    print(f'{first_name} {last_name}')
-    print(f'\nphone :')
-    index = 1
-    for item in phone:
-        print(f'{index} {item["type"]} {item["value"]}')
-        index += 1
-    print(f'\nemail :')
-    index = 1
-    for item in email:
-        print(f'{index} {item["type"]} {item["value"]}')
-        index += 1
+    for result in results:
+        fname = result[0]
+        first_name = result[0]
+        last_name = result[1]
+        phone = eval(result[2])
+        email = eval(result[3])
+        print(f'----------------------------------')
+        print(f'{first_name} {last_name}')
+        print(f'\nphone :')
+        index = 1
+        for item in phone:
+            print(f'{index} {item["type"]} {item["value"]}')
+            index += 1
+        print(f'\nemail :')
+        index = 1
+        for item in email:
+            print(f'{index} {item["type"]} {item["value"]}')
+            index += 1
     print(f'----------------------------------\n')
 
 
