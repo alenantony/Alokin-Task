@@ -57,22 +57,28 @@ async def create_contact(request):
     try:
         fname = data["fname"]
         lname = data["lname"]
-        phone = data["phone"]
-        email = data["email"]
+
         mycursor.execute(f'INSERT INTO contact(fname, lname) '
         f'VALUES("{fname}", "{lname}")')
 
         mycursor.execute(f'SELECT max(contactId) from contact')
         contactId = mycursor.fetchall()[0][0]
-        
-        for number in phone:
-            mycursor.execute(f'INSERT INTO phoneNo(contactId, type, number) '
-            f'VALUES({contactId}, "{number["type"]}", "{number["value"]}")')
-        
-        for address in email:
-            mycursor.execute(f'INSERT INTO email(contactId, type, email) '
-            f'VALUES({contactId}, "{address["type"]}", "{address["value"]}")')
 
+        try:
+            phone = data["phone"]
+            for number in phone:
+                mycursor.execute(f'INSERT INTO phoneNo(contactId, type, number) '
+                f'VALUES({contactId}, "{number["type"]}", "{number["value"]}")')
+        except:
+            pass
+        try:
+            email = data["email"]
+            for address in email:
+                mycursor.execute(f'INSERT INTO email(contactId, type, email) '
+                f'VALUES({contactId}, "{address["type"]}", "{address["value"]}")')
+        except:
+            pass
+        
         mydb.commit()
     except:
         mydb.rollback()
