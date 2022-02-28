@@ -123,7 +123,7 @@ def search_contacts(request):
 
     name = request.query_params['name']
 
-    #  Query to get all contacts list using name.
+    # Query to get all contacts list using name.
     mycursor.execute(f"""SELECT json_arrayagg(json_object(
     "fname",contact.fName,
     "lname",contact.lName,
@@ -190,7 +190,6 @@ async def update_contact(request):
     for i in result:
         table_phoneid_list.append(i[0])    
 
-
     phone = data["phone"]
 
     phoneId_list = []
@@ -227,7 +226,6 @@ async def update_contact(request):
     for i in result:
         table_emailId_list.append(i[0])
     
-
     email = data["email"]
 
     emailId_list = []

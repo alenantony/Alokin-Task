@@ -34,13 +34,13 @@ def validate_phone(phone_number):
         if len(new_number) < 10:
             return "Invalid number"
         
-        #  To reformat number when there is only 10 digits.
+        #  To reformat number when there are only 10 digits.
         elif len(new_number) == 10:
             new_number = (f'+1({new_number[:3]}) '
             f'{new_number[3:6]}-{new_number[6:]}'
             )
 
-        #  To reformat number when there is 11 digits and the first digit is 1.
+        #  To reformat number when there are 11 digits and the first digit is 1.
         elif len(new_number) == 11:
             if new_number[0] == "1":
                 new_number = (f'+1({new_number[1:4]}) '
@@ -53,7 +53,7 @@ def validate_phone(phone_number):
 
 
 def validate_data(row):
-    """Function to take data row by row from csv file for validation."""
+    """Function to validate data row by row."""
 
     new_row = []
 

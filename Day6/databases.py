@@ -16,7 +16,7 @@ mycursor = mydb.cursor()
 
 
 def list_contacts():
-    """To list all contacts in s=ascending order."""
+    """To list all contacts in ascending order."""
 
     mycursor.execute("SELECT * FROM contacts")
     result = mycursor.fetchall()
@@ -35,7 +35,6 @@ def list_contacts():
         for email in email:
             print(index, email)
             index += 1
-    print("-------------------------------")
 
 
 def create_contact():

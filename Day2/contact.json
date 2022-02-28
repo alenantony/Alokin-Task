@@ -47,5 +47,37 @@
             }
         ],
         "email": []
+    },
+    {
+        "fname": "Allen",
+        "lname": "Antony",
+        "phone": [
+            {
+                "type": "home",
+                "value": "8156970241"
+            },
+            {
+                "type": "work",
+                "value": "8111830888"
+            },
+            {
+                "type": "work1",
+                "value": "8111830999"
+            }
+        ],
+        "email": [
+            {
+                "type": "home",
+                "value": "alen@mail.com"
+            },
+            {
+                "type": "work",
+                "value": "alenan@alokin.in"
+            },
+            {
+                "type": "work1",
+                "value": "alenantony@live.com"
+            }
+        ]
     }
 ]
