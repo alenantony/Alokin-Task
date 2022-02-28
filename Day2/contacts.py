@@ -84,6 +84,7 @@ def search_contact():
     """Function to search for a contact."""
 
     data_list = get_data()
+    print()
 
     if data_list == "":
         print("No contacts")
@@ -91,19 +92,20 @@ def search_contact():
 
     data_list = json.loads(data_list)
     name = input("Enter first name to search: ")
-    try:
-        data = [item for item in data_list if item["fname"] == f"{name}"]
-        data = data[0]
-        
-        print("--------------------------------------------------------")
-        print(f'{data["fname"]} {data["lname"]}')
-        for item in data['phone']:
-            print(f'phone: {item["type"]}\tnumber: {item["value"]}')
-        for item in data['email']:
-            print(f'email: {item["type"]}\taddress: {item["value"]}')
-        print("--------------------------------------------------------")
-    except IndexError:
+    
+    data_fname = [item for item in data_list if item["fname"] == f'{name}']
+
+    if data_fname == []:
         print(f'contact "{name}" doesnt exist.')
+    else:
+        for data in data_fname:
+            print("--------------------------------------------------------")
+            print(f'{data["fname"]} {data["lname"]}')
+            for item in data['phone']:
+                print(f'phone: {item["type"]}\tnumber: {item["value"]}')
+            for item in data['email']:
+                print(f'email: {item["type"]}\taddress: {item["value"]}')
+        print("--------------------------------------------------------")
 
 
 def edit_contact():
@@ -120,12 +122,16 @@ def edit_contact():
     try:
         data = [item for item in data_list if item["fname"] == f"{name}"]
         temp_data = data
+
         data = data[0]
+        print(data['fname']," ",data['lname'])
+        print(f'''phone: {data['phone']}\nemail: {data['email']}''')
         choice = input("Edit data?(Y/N):")
         while choice == 'y' or choice == 'Y':
             try:
                 sub_choice = int(input(
-                    f'Choose from 1.fname, 2.lname, 3.phone, 4.email, 0.exit to edit\n'
+                    f'Choose from 1.fname, 2.lname, 3.phone, '
+                    f'4.email, 0.exit to edit\n'
                     f'(choose: 1/2/3/4/0):'
                 ))
 
@@ -218,9 +224,8 @@ def edit_contact():
                 print("Wrong option")
     except:
         print(f'No contact named {name}')
+        print("---------------------------------------------------------\n")
         return
-
-    
     
 
 
@@ -228,7 +233,6 @@ def delete_contact():
     """Function to delete a contact."""
 
     data_list = get_data()
-
     if data_list == "":
         print("No contacts to delete")
         return
@@ -239,7 +243,7 @@ def delete_contact():
         name = input("Enter the contact name to delete: ")
         data = [item for item in data_list if item["fname"] == f"{name}"]
     except:
-        print(f'No contact named {name}')
+        print(f'No contact named {name}\n')
         return
 
     print(data[0])
@@ -258,6 +262,8 @@ def contacts_application():
     choice = 100
 
     while choice not in choice_list:
+
+        print("Contacts App\n")
         
         print("Choose",
             f'\n\t1. List contacts'

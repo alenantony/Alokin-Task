@@ -1,3 +1,4 @@
+"""Function to get time of execution of a function."""
 # import time
 
 # a = input("Ente a value:")
