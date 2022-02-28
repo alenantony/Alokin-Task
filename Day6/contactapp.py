@@ -112,7 +112,10 @@ async def contact_details(request):
         contact_details = json.loads(result[0][0])
         return JSONResponse(contact_details)
     except IndexError:
-        return JSONResponse({"status": "error","message": "Invalid contactId"},status_code=400)
+        return JSONResponse({
+            "status": "error",
+            "message": "Invalid contactId"
+            },status_code=400)
         
     
 #  SEARCH CONTACT.
@@ -148,7 +151,7 @@ def search_contacts(request):
 
 
 def delete_contact(request):
-    """Function to delete a contact."""
+    """Function to delete a contact using contactId"""
 
     contactId = request.path_params['contactId']
 
@@ -169,93 +172,100 @@ async def update_contact(request):
     as new number and new email
     """
 
-    contactId = int(request.path_params['contactId'])
+    try:
+        contactId = int(request.path_params['contactId'])
 
-    data = await request.json()
-    fname = data["fname"]
-    lname = data["lname"]
-  
-    mycursor.execute(f"UPDATE contact SET fname = '{fname}', "
-                        f"lname = '{lname}' WHERE contactId = '{contactId}'")
+        data = await request.json()
+        fname = data["fname"]
+        lname = data["lname"]
 
-    #  To update, delete, and add phone numbers.
-    table_phoneid_list = []
-    mycursor.execute(f"SELECT phoneId from phoneNo where contactId = "
-    f"'{contactId}'")
-    result = mycursor.fetchall()
-    if result == []:
+        mycursor.execute(
+            f"UPDATE contact SET fname = '{fname}', "
+            f"lname = '{lname}' WHERE contactId = '{contactId}'"
+        )
+
+        #  To update, delete, and add phone numbers.
+        table_phoneid_list = []
+        mycursor.execute(f"SELECT phoneId from phoneNo where contactId = "
+        f"'{contactId}'")
+        result = mycursor.fetchall()
+        if result == []:
+            mydb.rollback()
+            return JSONResponse(
+                {"Staus": "Invalid contactId"}, status_code=400
+            )
+        
+        for i in result:
+            table_phoneid_list.append(i[0])    
+
+        phone = data["phone"]
+
+        phoneId_list = []
+        phone_list = []
+        
+        for item in phone:
+
+            #  To update existing phoneno.
+            if "phoneId" in item:
+                phone_list.append(item)
+                phoneId_list.append(int(item["phoneId"]))
+                mycursor.execute(f'UPDATE phoneNo SET type = "{item["type"]}"'
+                f', number = "{item["value"]}"'
+                f'where phoneId = "{item["phoneId"]}"')
+
+            #  To add new phonno.
+            else:
+                mycursor.execute(
+                    f'INSERT INTO phoneNo(contactId, type, number) '
+                    f'VALUES({contactId}, "{item["type"]}", '
+                    f'"{item["value"]}")'
+                    )
+        
+        #  To delete phoneno.
+        for item in table_phoneid_list:
+            if item not in phoneId_list:
+                mycursor.execute(f"delete from phoneNo where "
+                f"phoneId = {item}")
+
+        #  To update, delete, and add email addresses.
+        table_emailId_list = []
+        mycursor.execute(f"SELECT emailId from email where contactId = "
+        f"'{contactId}'")
+        result = mycursor.fetchall()
+        for i in result:
+            table_emailId_list.append(i[0])
+        
+        email = data["email"]
+
+        emailId_list = []
+        email_list = []
+
+        for item in email:
+
+            #  To update existing email.
+            if "emailId" in item:
+                email_list.append(item)
+                emailId_list.append(int(item["emailId"]))
+                mycursor.execute(f'UPDATE email SET type = "{item["type"]}"'
+                f', email = "{item["value"]}" '
+                f'where emailId = "{item["emailId"]}"')
+
+            #  Add new email.
+            else:
+                mycursor.execute(f'INSERT INTO email(contactId, type, email) '
+                f'VALUES({contactId}, "{item["type"]}", "{item["value"]}")')
+        
+        #  To delete email.
+        for item in table_emailId_list:
+            if item not in emailId_list:
+                mycursor.execute(f"delete from email where emailId = {item}")
+
+        mydb.commit()
+        return JSONResponse({"status": "Contact edited"})
+
+    except:
         mydb.rollback()
-        return JSONResponse({"Staus": "Invalid contactId"}, status_code=400)
-    
-    for i in result:
-        table_phoneid_list.append(i[0])    
-
-    phone = data["phone"]
-
-    phoneId_list = []
-    phone_list = []
-
-    for item in phone:
-
-        #  To update existing phoneno.
-        if "phoneId" in item:
-            phone_list.append(item)
-            phoneId_list.append(int(item["phoneId"]))
-            mycursor.execute(f'UPDATE phoneNo SET type = "{item["type"]}"'
-            f', number = "{item["value"]}"'
-            f'where phoneId = "{item["phoneId"]}"')
-
-        #  To add new phonno.
-        else:
-            mycursor.execute(f'INSERT INTO phoneNo(contactId, type, number) '
-            f'VALUES({contactId}, "{item["type"]}", "{item["value"]}")')
-    
-    #  To delete phoneno.
-    index = 0
-    for item in table_phoneid_list:
-        if item not in phoneId_list:
-            mycursor.execute(f"delete from phoneNo where phoneId = {item}")
-            index += 1
-
-
-    #  To update, delete, and add email addresses.
-    table_emailId_list = []
-    mycursor.execute(f"SELECT emailId from email where contactId = "
-    f"'{contactId}'")
-    result = mycursor.fetchall()
-    for i in result:
-        table_emailId_list.append(i[0])
-    
-    email = data["email"]
-
-    emailId_list = []
-    email_list = []
-
-    for item in email:
-
-        #  To update existing email.
-        if "emailId" in item:
-            email_list.append(item)
-            emailId_list.append(int(item["emailId"]))
-            mycursor.execute(f'UPDATE email SET type = "{item["type"]}"'
-            f', email = "{item["value"]}" '
-            f'where emailId = "{item["emailId"]}"')
-
-        #  Add new email.
-        else:
-            mycursor.execute(f'INSERT INTO email(contactId, type, email) '
-            f'VALUES({contactId}, "{item["type"]}", "{item["value"]}")')
-    
-    #  To delete email.
-    index = 0
-    for item in table_emailId_list:
-        if item not in emailId_list:
-            mycursor.execute(f"delete from email where emailId = {item}")
-            index += 1
-
-    mydb.commit()
-
-    return JSONResponse({"status": "Contact edited"})
+        return JSONResponse({"Status": "Contact edit failed"})
 
 
 routes = [

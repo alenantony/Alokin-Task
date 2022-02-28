@@ -1,4 +1,4 @@
-"""A decorator program to calculate the time of execution of a function in python."""
+"""A decorator program to do division"""
 
 
 def div(a,b):

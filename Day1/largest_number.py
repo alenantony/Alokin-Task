@@ -11,14 +11,19 @@ def highest_occurance(user_input):
     """
 
     user_input = dict(Counter(user_input))
+
+    # To sort in ascending order.
     sorted_dict = {k: v for k, v in sorted(
         user_input.items(), key=lambda item: item[1],
         )}
     print(sorted_dict)
 
+    # To sort in descendeing order.
     sorted_dict = {k: v for k, v in sorted(
-        user_input.items(), key=lambda item: item[1], reverse=True
-        )}
+        user_input.items(),
+        key=lambda item: item[1],
+        reverse=True
+    )}
     print(sorted_dict)
 
 

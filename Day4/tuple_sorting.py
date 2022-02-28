@@ -13,9 +13,15 @@ list_of_tuple = [('V', {'a':62} ),('VI', {'d':72}), ('VII', {'f':72}), ('VIII',{
 # maximum_minimum = ((max(list_of_tuple, key=lambda item: item[1].keys()))[1], 
 #                     (min(list_of_tuple, key=lambda item: item[1].keys()))[1])
 # print(maximum_minimum)
-maximum_minimum = max(list_of_tuple1, key=lambda item: item[1])[1], min(list_of_tuple1, key=lambda item: item[1])[1]
+maximum_minimum = (
+    max(list_of_tuple1, key=lambda item: item[1])[1],
+    min(list_of_tuple1, key=lambda item: item[1])[1]
+)
+
 print(maximum_minimum)
 
-value = (list(max(list_of_tuple, key = lambda item: [i for i in item[1].values()])[1].values())[0], 
-            list(min(list_of_tuple, key=lambda item: [i for i in item[1].values()])[1].values())[0])
+value = (
+    list(max(list_of_tuple, key = lambda item: [i for i in item[1].values()])[1].values())[0],
+    list(min(list_of_tuple, key=lambda item: [i for i in item[1].values()])[1].values())[0]
+)
 print(value)
