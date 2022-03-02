@@ -55,8 +55,18 @@ async def create_contact(request):
         return JSONResponse({"status":"JSONDecodeError"}, status_code=400)
 
     try:
-        fname = data["fname"]
-        lname = data["lname"]
+        try:
+            fname = data["fname"]
+        except:
+            fname = ""
+        try:
+            lname = data["lname"]
+        except:
+            lname = ""
+        
+        if fname == "" and lname == "":
+            fname = "No"
+            lname = "Name"
 
         mycursor.execute(f'INSERT INTO contact(fname, lname) '
         f'VALUES("{fname}", "{lname}")')
@@ -78,7 +88,7 @@ async def create_contact(request):
                 f'VALUES({contactId}, "{address["type"]}", "{address["value"]}")')
         except:
             pass
-        
+
         mydb.commit()
     except:
         mydb.rollback()
@@ -182,8 +192,18 @@ async def update_contact(request):
         contactId = int(request.path_params['contactId'])
 
         data = await request.json()
-        fname = data["fname"]
-        lname = data["lname"]
+        try:
+            fname = data["fname"]
+        except:
+            fname = ""
+        try:
+            lname = data["lname"]
+        except:
+            lname = ""
+        
+        if fname == "" and lname == "":
+            fname = "No"
+            lname = "Name"
 
         mycursor.execute(
             f"UPDATE contact SET fname = '{fname}', "
